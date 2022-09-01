@@ -1,5 +1,2 @@
 #!/bin/bash
-su
-sudo
-sudo -i
-su
+su -
