@@ -1,24 +1,40 @@
-#!/usr/bin/env bash
-# Installs nginx web server
+#!/bin/bash
 
-apt-get update
-apt-get install -y nginx
-service nginx start
-mkdir /etc/nginx/html
-echo "Holberton School" > /etc/nginx/html/index.html
-echo "Ceci n'est pas une page" > /etc/nginx/html/404.html
-echo "server {
-    listen 80;
+# Update the package list and upgrade the packages
+sudo apt-get update
+sudo apt-get upgrade -y
+
+# Install Nginx
+sudo apt-get install nginx -y
+
+# Create a custom 404 page file
+sudo bash -c 'cat > /var/www/html/404.html << EOF
+<!DOCTYPE html>
+<html>
+<head>
+	<title>404 Not Found</title>
+</head>
+<body>
+	<h1>404 Not Found</h1>
+	<p>Ceci n'est pas une page</p>
+</body>
+</html>
+EOF'
+
+# Configure Nginx to use the custom error page
+sudo bash -c 'cat > /etc/nginx/sites-available/default << EOF
+server {
+    listen 80 default_server;
     listen [::]:80 default_server;
-    root   /etc/nginx/html;
-    index  index.html;
-    location /redirect_me {
-        return 301 https://twitter.com/Emmanue17280546;
-    }
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    server_name _;
     error_page 404 /404.html;
-    location = /404.html{
-        root /etc/nginx/html;
+    location = /404.html {
         internal;
     }
-}" > /etc/nginx/sites-available/default
-service nginx restart
+}
+EOF'
+
+# Test the configuration and reload Nginx
+sudo nginx -t && sudo systemctl reload nginx
